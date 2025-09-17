@@ -2,34 +2,35 @@ using UnityEngine;
 
 public class CameraFollow : MonoBehaviour
 {
-    public Transform player;       
-    public Vector3 offset = new Vector3(0, 3, -6);
-    public float smoothSpeed = 0.1f;    
-    public float rotationSpeed = 5f;  
-    public float minYAngle = -30f;     
-    public float maxYAngle = 60f;        // Limite rotation verticale haut
-    private float currentYaw = 0f;
-    private float currentPitch = 20f;
+    public float sensX;
+    public float sensY;
 
-    void LateUpdate()
+    public Transform orientation;
+    public Transform player; // le joueur à suivre
+    public Vector3 offset;   // position relative à garder (ex: nouvelle Vector3(0,1.6f,0))
+
+    float xRotation;
+    float yRotation;
+
+    private void Start()
     {
-        // Lire la souris
-        float mouseX = Input.GetAxis("Mouse X") * rotationSpeed;
-        float mouseY = Input.GetAxis("Mouse Y") * rotationSpeed;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
 
-        currentYaw += mouseX;
-        currentPitch -= mouseY;
-        currentPitch = Mathf.Clamp(currentPitch, minYAngle, maxYAngle);
+    private void Update()
+    {
+        float mouseX = Input.GetAxisRaw("Mouse X") * Time.deltaTime * sensX;
+        float mouseY = Input.GetAxisRaw("Mouse Y") * Time.deltaTime * sensY;
 
-        // Rotation horizontale pour position caméra
-        Quaternion yawRotation = Quaternion.Euler(0, currentYaw, 0);
-        Vector3 desiredPosition = player.position + yawRotation * offset;
+        yRotation += mouseX;
+        xRotation -= mouseY;
+        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
-        // Lissage position caméra
-        transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
+        transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
+        orientation.rotation = Quaternion.Euler(0, yRotation, 0);
 
-        // Regarder le joueur avec pitch vertical
-        Vector3 lookTarget = player.position + Vector3.up * 1.5f;
-        transform.LookAt(lookTarget);
+        // Mettre la caméra sur le joueur avec un décalage
+        transform.position = player.position + offset;
     }
 }

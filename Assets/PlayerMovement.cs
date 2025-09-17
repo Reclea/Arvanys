@@ -3,61 +3,152 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
+    [Header("Movement")]
+    public float moveSpeed;
+    public float groundDrag;
+
+    [Header("Run")]
     public float walkSpeed = 5f;
-    public float runSpeed = 10f;
-    public float jumpHeight = 2f;
-    public float gravity = -9.81f;
+    public float runSpeed = 9f;
+    public KeyCode runKey = KeyCode.LeftShift;
 
-    public Transform cam; // assigner la caméra principale ici
+    [Header("Slope Handling")]
+    public float maxSlopeAngle = 45f;
+    private RaycastHit slopeHit;
+    private bool exitingSlope;
 
-    private CharacterController controller;
-    private Vector3 velocity;
-    private bool isGrounded;
 
-    void Start()
+
+    public float jumpForce;
+    public float jumpCooldown;
+    public float airMultiplier;
+    bool readyToJump;
+
+    [Header("Keybinds")]
+    public KeyCode jumpKey = KeyCode.Space;
+
+    [Header("Ground check")]
+    public float playerHeight;
+    public LayerMask whatIsGround;
+    bool grounded;
+
+    public Transform orientation;
+
+    float horizontalInput;
+    float verticalInput;
+
+    Vector3 moveDirection;
+
+    Rigidbody rb;
+
+    private void Start()
     {
-        controller = GetComponent<CharacterController>();
+        rb = GetComponent<Rigidbody>();
+        rb.freezeRotation = true;
+        readyToJump = true;
     }
 
+    private void FixedUpdate()
+    {
+        MovePlayer();
+    }
     void Update()
     {
-        isGrounded = controller.isGrounded;
-        if (isGrounded && velocity.y < 0)
-            velocity.y = -2f;
+        grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
 
-        // Déplacement relatif à la caméra
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
+        MyInput();
+        SpeedControl();
 
-        Vector3 forward = cam.forward;
-        Vector3 right = cam.right;
-
-        forward.y = 0f;
-        right.y = 0f;
-        forward.Normalize();
-        right.Normalize();
-
-        Vector3 move = forward * vertical + right * horizontal;
-
-        // Marche / course
-        float speed = Input.GetKey(KeyCode.LeftShift) ? runSpeed : walkSpeed;
-        controller.Move(move * speed * Time.deltaTime);
-
-        // Saut
-        if (Input.GetButtonDown("Jump") && isGrounded)
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-
-        // Gravité
-        velocity.y += gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
-
-        // Tourner le joueur vers la direction du mouvement
-        if (move != Vector3.zero)
+        if (grounded)
         {
-            // On veut seulement la rotation horizontale
-            Vector3 lookDir = new Vector3(move.x, 0, move.z);
-            transform.forward = lookDir.normalized;
+            rb.drag = groundDrag;
+        }
+        else
+        {
+            rb.drag = 0;
+        }
+    }
+    private void MyInput()
+    {
+        horizontalInput = Input.GetAxisRaw("Horizontal");
+        verticalInput = Input.GetAxisRaw("Vertical");
+
+        if (Input.GetKey(jumpKey) && readyToJump && grounded)
+        {
+            readyToJump = false;
+
+            Jump();
+
+            Invoke(nameof(ResetJump), jumpCooldown);
         }
 
     }
+
+    private void MovePlayer()
+    {
+        moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+        float currentSpeed = Input.GetKey(runKey) && grounded ? runSpeed : walkSpeed;
+
+        if (grounded && OnSlope() && !exitingSlope)
+        {
+            rb.AddForce(GetSlopeMoveDirection() * currentSpeed * 10f, ForceMode.Force);
+
+            if (rb.velocity.y > 0)
+                rb.AddForce(Vector3.down * 80f, ForceMode.Force); // empêche de "sauter" en montant la pente
+        }
+        else if (grounded)
+        {
+            rb.AddForce(moveDirection.normalized * currentSpeed * 10f, ForceMode.Force);
+        }
+        else if (!grounded)
+        {
+            rb.AddForce(moveDirection.normalized * currentSpeed * 10f * airMultiplier, ForceMode.Force);
+        }
+
+        rb.useGravity = !OnSlope(); // évite de coller à la pente
+    }
+
+
+    private void SpeedControl()
+    {
+        Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        float currentSpeed = Input.GetKey(runKey) && grounded ? runSpeed : walkSpeed;
+
+        if (flatVel.magnitude > currentSpeed)
+        {
+            Vector3 limitedVel = flatVel.normalized * currentSpeed;
+            rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
+        }
+    }
+
+    public void Jump()
+    {
+        rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+    }
+
+    private void ResetJump()
+    {
+        readyToJump = true;
+    }
+
+    private bool OnSlope()
+    {
+        if (Physics.Raycast(transform.position, Vector3.down, out slopeHit, playerHeight * 0.5f + 0.5f, whatIsGround))
+        {
+            float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
+            return angle < maxSlopeAngle && angle != 0;
+        }
+        return false;
+    }
+
+    private Vector3 GetSlopeMoveDirection()
+    {
+        return Vector3.ProjectOnPlane(moveDirection, slopeHit.normal).normalized;
+    }
+
+
+
 }
