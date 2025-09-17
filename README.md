@@ -1,43 +1,41 @@
 # ✨Arvanys ✨
 
-**Jeu 3D style cartoon - Open World - Magie**  
-Développé avec **Unity 3D** par **Clément Noel**
+**3D Cartoon-Style Game - Open World - Magic**  
+Developed with **Unity 3D** by **Clément Noel**
 
 ---
 
 ## 🎮 Description
 
-Bienvenue dans **Arvanys** !  
-Dans votre île encore sans nom, vous vous aventurez dans la forêt proche de votre ville et découvrez un **grimoire magique**.  
-Apprenez à **contrôler la magie**, débloquez de nouveaux sorts, combattez les monstres apparus suite à des événements mystérieux, explorez des lieux enchantés et aidez le village à accomplir diverses **quêtes**.
+Welcome to **Arvanys**!  
+On your yet-unnamed island, you venture into the nearby forest of your town and discover a **magic grimoire**.  
+Learn to **master magic**, unlock new spells, fight monsters that appeared after mysterious events, explore enchanted places, and help the village complete various **quests**.
 
 ---
 
-## ✨ Fonctionnalités principales
+## ✨ Main Features
 
-- 🌍 Exploration d’un monde ouvert en 3D  
-- 🪄 Système de magie avec plusieurs sorts à débloquer  
-- 📝 Quêtes pour aider le village et progresser dans l’histoire  
-- 🎨 Ambiance cartoon immersive
+- 🌍 Exploration of a 3D open world  
+- 🪄 Magic system with multiple unlockable spells  
+- 📝 Quests to help the village and progress through the story  
+- 🎨 Immersive cartoon-style atmosphere  
 
 ---
 
 ## ⚙️ Installation
 
-Le projet est encore en développement. Pour l’instant, il n’est pas encore prêt à être joué.
+The project is still in development. For now, it is not yet playable.  
 
 ---
 
-## 🛠 Technologies utilisées
+## 🛠 Technologies Used
 
 - Unity 3D  
 - C#
 
-
 ---
 
-## 👤 Auteur
+## 👤 Author
 
 Clément Noel  
 [GitHub](https://github.com/Reclea)
-
