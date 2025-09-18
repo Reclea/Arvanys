@@ -2,39 +2,47 @@ using UnityEngine;
 
 public class LightningFall : MonoBehaviour
 {
-    private GameObject circlePrefab;
+    public GameObject impactPrefab;   // Particule à l'impact
+    public GameObject lightningVFX;   // Particule de l'éclair en chute
     private float fallSpeed;
 
-    public void Initialize(GameObject circlePrefab, float fallSpeed)
+    // Initialisation
+    public void Initialize(GameObject impactPrefab, GameObject lightningVFX, float fallSpeed)
     {
-        this.circlePrefab = circlePrefab;
+        this.impactPrefab = impactPrefab;
+        this.lightningVFX = lightningVFX;
         this.fallSpeed = fallSpeed;
+
+        // Instancier les particules de l'éclair au départ
+        if (lightningVFX != null)
+        {
+            GameObject vfx = Instantiate(lightningVFX, transform.position, Quaternion.identity);
+            vfx.transform.parent = transform; // suivre la chute
+        }
     }
 
     void Update()
     {
-        // Faire descendre le cube
+        // Faire descendre l'éclair
         transform.position += Vector3.down * fallSpeed * Time.deltaTime;
 
-        // Vérifier le sol avec un rayon plus grand pour éviter le délai
+        // Vérifier le sol
         if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, 20f))
         {
-            if (transform.position.y - hit.point.y <= 0.1f) // proche du sol
+            if (transform.position.y - hit.point.y <= 0.1f)
             {
-                SpawnCircle(hit.point);
-                Destroy(gameObject); // supprimer l'éclair
+                SpawnImpact(hit.point);
+                Destroy(gameObject); // détruire l'éclair
             }
         }
     }
 
-    void SpawnCircle(Vector3 position)
+    void SpawnImpact(Vector3 position)
     {
-        GameObject circle = Instantiate(circlePrefab, position, Quaternion.identity);
-
-        // Ajuster le cercle pour avoir 1 mètre de rayon
-        circle.transform.localScale = new Vector3(2f, 1f, 2f); // 1m de rayon = diamètre 2m
-
-        // Détruire le cercle après 1 seconde
-        Destroy(circle, 1f);
+        if (impactPrefab != null)
+        {
+            GameObject impact = Instantiate(impactPrefab, position, Quaternion.identity);
+            Destroy(impact, 1f); // détruire après 1 seconde
+        }
     }
 }

@@ -2,15 +2,16 @@ using UnityEngine;
 
 public class LightningSpell : MonoBehaviour
 {
-    public GameObject lightningPrefab;   // Cube violet
-    public GameObject circlePrefab;      // Cercle violet au sol
-    public float spawnDistance = 3f;     // Distance devant le joueur
-    public float fallSpeed = 10f;        // Vitesse de chute
-    public Transform orientation;        // GameObject qui gère la direction du regard
+    public GameObject lightningPrefab;   // Cube ou empty pour le script
+    public GameObject lightningVFX;      // Particules de l'éclair
+    public GameObject impactVFX;         // Particules de l'impact
+    public float spawnDistance = 3f;
+    public float fallSpeed = 10f;
+    public Transform orientation;
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Q)) // Touche pour lancer le sort
+        if (Input.GetKeyDown(KeyCode.Q))
         {
             SpawnLightning();
         }
@@ -18,11 +19,10 @@ public class LightningSpell : MonoBehaviour
 
     void SpawnLightning()
     {
-        // Utiliser l'orientation pour la direction
         Vector3 spawnPos = transform.position + orientation.forward * spawnDistance + Vector3.up * 10f;
         GameObject lightning = Instantiate(lightningPrefab, spawnPos, Quaternion.identity);
 
-        // Ajouter le script qui fait tomber le cube
-        lightning.AddComponent<LightningFall>().Initialize(circlePrefab, fallSpeed);
+        // Ajouter le script pour la chute et passer les particules
+        lightning.AddComponent<LightningFall>().Initialize(impactVFX, lightningVFX, fallSpeed);
     }
 }
